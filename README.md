@@ -6,11 +6,12 @@
 
 ## What it does
 
-- Six linked architecture maps (5G Core, RAN, non-3GPP access, EPS, IMS, CS/GPRS) with 113 network functions and 240 reference points.
+- Seven linked architecture maps (5G Core, RAN, non-3GPP access, EPS, IMS, CS/GPRS, NTN) with 121 network functions and 243 reference points.
 - Click a reference point to see the clause that defines it, then open the official ETSI PDF of the chosen release at that exact page.
 - Switch releases from Rel-15 to Rel-19 and see the architecture change; compare releases down to individual clauses.
+- The NTN map shows satellite access in 5GS and EPS: transparent and regenerative payloads, the NTN Gateway, the UPF, MME and IMS-AGW on board, and satellite backhaul. Links that run over a satellite link are marked, and 30 NTN concepts open their defining clause in each release.
 - A reference-point matrix for each map and a 4G → 5G counterpart view.
-- Search clause titles across the 21–38 series (1,381 TS catalogued) and the full text of the 309 specs on the maps.
+- Search clause titles across the 21–38 series (1,381 TS catalogued) and the full text of the 317 specs on the maps.
 
 ## Use it offline
 
@@ -24,7 +25,7 @@ This is a personal project. It is not affiliated with or endorsed by 3GPP or ETS
 
 ## Version
 
-v0.7.0, 30 October 2026.
+v0.9.1, 3 November 2026.
 
 ## Author
 
