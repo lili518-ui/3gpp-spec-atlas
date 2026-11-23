@@ -15,8 +15,11 @@ python -m atlas_core.build             # ../index.html -> dist/atlas.db (about 8
 python -m atlas_core.validate          # 14 exact-count checks against the page
 python -m pytest                       # unit tests and the 200-anchor citation golden test (needs node)
 python -m atlas_core.evaluate -v       # eval sets and latency
-claude mcp add atlas -- atlas-mcp      # register with Claude Code (stdio)
+claude mcp add -s user atlas -- "$PWD/.venv/bin/atlas-mcp"   # register with Claude Code (stdio)
 ```
+
+On macOS, `./install_mac.sh` does all of the above in one step (it fetches Python 3.12 with uv
+when the Mac has no Python 3.11+, and registers the server at user scope).
 
 `ATLAS_DB=/path/to/atlas.db` points the server at another build. The database is a build
 product: it is ignored by git and rebuilt from the page whenever the Atlas data changes.
