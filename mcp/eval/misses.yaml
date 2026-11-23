@@ -1,0 +1,38 @@
+# Honest-miss evaluation: queries with no defining 3GPP clause in the v1 lexicon scope.
+# Every case must come back not_found or ambiguous, never with an invented anchor.
+# Section A: QXDM log packets, events and traces from the Mobile Maven profiles (Qualcomm
+# diagnostics, not 3GPP messages). Section B: SIP methods (IETF, out of v1 scope).
+# Section C: made-up names.
+reviewed: false
+release: 17
+cases:
+  - NR5G MAC PDSCH Status
+  - NR5G MAC RACH Attempt
+  - LTE MAC Rach Attempt
+  - LTE PDSCH Stat Indication
+  - LTE ML1 Serving Cell Meas Response
+  - NR5G ML1 Searcher Measurement Database Update Ext
+  - NR5G LL1 LOG SERVING SNR
+  - NR5G LL1 FW TX IU RF
+  - NR5G MAC UL Physical Channel Power Control
+  - NR5G RRC Serving Cell Info
+  - LTE RRC Serving Cell Info Log Pkt
+  - GNSS Position Report
+  - IMS VoLTE Session Setup
+  - EVENT_NR5G_RRC_SCG_FAILURE
+  - QSH/ANALYSIS/Low/ENL2DL
+  - UIM MMGSDI Session Read From Cache Response
+  - INVITE
+  - BYE
+  - PRACK
+  - SUBSCRIBE
+  - 180 Ringing
+  - 200 OK
+  - 486 Busy Here
+  - Registration teleport request
+  - RRCQuantumHandover
+  - PDU session hyperdrive command
+  - Tracking area vacation accept
+  - PFCP Session Celebration Request
+  - Create Holiday Request
+  - Banana-Split-Request

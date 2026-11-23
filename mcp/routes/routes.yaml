@@ -1,0 +1,63 @@
+# Curated reading routes: requirements -> architecture -> protocols -> tests.
+#
+# Each step names a spec and, where one heading clearly anchors the topic, that heading's
+# title (resolved per release; a step falls back to a spec-level citation when the heading
+# is absent in the requested release). Drafted from the Atlas clause lists; `reviewed: false`
+# until Li has checked the order and the choice of clauses.
+
+routes:
+  - topic: RedCap
+    aliases: [nr redcap, reduced capability, reduced capability nr devices]
+    reviewed: false
+    steps:
+      - {stage: architecture, ts: "38.300", clause_title: "Support of Reduced Capability (RedCap) NR devices", why: "RAN overview of RedCap devices"}
+      - {stage: architecture, ts: "23.501", clause_title: "NR RedCap UEs differentiation", why: "How the core network identifies RedCap UEs"}
+      - {stage: protocol, ts: "38.306", clause_title: "Definition of RedCap UE", why: "UE capability definition of a RedCap UE"}
+      - {stage: protocol, ts: "38.331", why: "RRC signalling, including RedCap-specific fields"}
+      - {stage: protocol, ts: "38.304", why: "Idle and inactive mode behaviour, including relaxed measurements"}
+      - {stage: protocol, ts: "24.501", why: "NAS procedures used by RedCap UEs"}
+      - {stage: test, ts: "38.523-1", why: "UE protocol conformance tests"}
+      - {stage: test, ts: "38.521-1", why: "UE RF conformance tests (FR1)"}
+
+  - topic: Network slicing
+    aliases: [slicing, network slice, slices]
+    reviewed: false
+    steps:
+      - {stage: requirements, ts: "22.261", clause_title: "Network slicing", why: "Stage 1 service requirements"}
+      - {stage: architecture, ts: "23.501", clause_title: "Network slicing", why: "Stage 2 architecture: S-NSSAI, NSSAI, selection"}
+      - {stage: architecture, ts: "23.502", clause_title: "Network Slice-Specific Authentication and Authorization procedure", why: "Stage 2 procedures for NSSAA"}
+      - {stage: architecture, ts: "38.300", clause_title: "Network Slicing", why: "RAN aspects of slicing"}
+      - {stage: protocol, ts: "24.501", clause_title: "Network slicing", why: "NAS handling of NSSAI and slice admission"}
+      - {stage: protocol, ts: "24.526", why: "URSP: UE policies that steer traffic to slices"}
+      - {stage: test, ts: "38.523-1", why: "UE protocol conformance tests"}
+
+  - topic: VoNR
+    aliases: [voice over nr, ims voice, nr voice]
+    reviewed: false
+    steps:
+      - {stage: architecture, ts: "23.501", clause_title: "IMS support", clause_prefix: "5.16", why: "5GS support for IMS"}
+      - {stage: architecture, ts: "23.502", clause_title: "Support of IMS Voice", why: "Procedures, including EPS fallback"}
+      - {stage: architecture, ts: "38.300", clause_title: "IMS Voice", why: "RAN support for IMS voice"}
+      - {stage: architecture, ts: "23.228", why: "IMS stage 2"}
+      - {stage: protocol, ts: "24.229", why: "IMS SIP signalling"}
+      - {stage: test, ts: "34.229-5", why: "IMS UE conformance over 5GS"}
+
+  - topic: NTN
+    aliases: [non-terrestrial networks, satellite, nr ntn, satellite access]
+    reviewed: false
+    steps:
+      - {stage: architecture, ts: "38.300", clause_title: "Non-Terrestrial Networks", why: "RAN overview of NTN"}
+      - {stage: architecture, ts: "23.501", clause_title: "Support for integrating NR satellite access into 5GS", why: "Core network support for satellite access"}
+      - {stage: protocol, ts: "24.501", clause_title: "5GS mobility management via a satellite NG-RAN cell", why: "NAS behaviour via satellite cells"}
+      - {stage: protocol, ts: "38.331", why: "RRC signalling for NTN"}
+      - {stage: test, ts: "38.523-1", why: "UE protocol conformance tests"}
+
+  - topic: eDRX and PSM
+    aliases: [edrx, psm, power saving, extended drx, power saving mode]
+    reviewed: false
+    steps:
+      - {stage: architecture, ts: "23.501", clause_title: "Power Saving Enhancements", why: "Stage 2: eDRX, MICO and power saving"}
+      - {stage: architecture, ts: "38.300", clause_title: "Extended DRX for RRC_IDLE and RRC_INACTIVE", why: "RAN view of eDRX"}
+      - {stage: protocol, ts: "24.501", clause_title: "Extended DRX cycle for UEs in 5GMM-IDLE and 5GMM-CONNECTED mode with RRC inactive indication", why: "NAS negotiation of eDRX"}
+      - {stage: protocol, ts: "38.304", clause_title: "Paging in extended DRX", why: "Paging occasions with eDRX"}
+      - {stage: test, ts: "38.523-1", why: "UE protocol conformance tests"}
