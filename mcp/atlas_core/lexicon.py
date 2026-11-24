@@ -121,6 +121,13 @@ def compact(s: str) -> str:
     return "".join(words(s))
 
 
+def protocol_alias(key: str, query: str) -> str:
+    """Decoder spellings that differ by protocol: NR RRC logs show SIB1 under its LTE name."""
+    if key == "NR-RRC":
+        return re.sub(r"(?i)SystemInformationBlockType(\d+)", r"SIB\1", query)
+    return query
+
+
 def _core(title: str) -> str:
     """Title without a bracketed acronym or a trailing 'Command'/'message(s)':
     'Update-Location-Request (ULR) Command' -> 'Update-Location-Request'."""

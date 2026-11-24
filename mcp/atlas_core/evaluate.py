@@ -88,6 +88,8 @@ def run(atlas: Atlas, verbose: bool = False) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--verbose", action="store_true")
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 when an accuracy target is missed (latency is reported, not gated: CI runners vary)")
     args = ap.parse_args()
     t = time.perf_counter()
     atlas = Atlas()
@@ -103,6 +105,11 @@ def main() -> None:
         if args.verbose:
             for f in r.get("fails", []):
                 print("   FAIL", f)
+    missed = [n for n, r in res.items() if r.get("rate") is not None and r["rate"] < r["target"]]
+    missed += ["lexicon (invented anchors)"] if res["lexicon"]["invented"] else []
+    if args.check and missed:
+        print("Targets missed:", ", ".join(missed))
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

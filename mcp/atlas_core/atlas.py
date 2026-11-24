@@ -56,6 +56,7 @@ class Atlas:
         self.version = meta["atlas_version"]
         self.snapshot = meta["snapshot"]
         self.releases: list[int] = json.loads(meta["releases"])
+        self.profile = meta.get("profile", "full")  # "slim" exports hold only the lexicon specs
         self.spec = {r[0]: {"ts": r[0], "title": r[1], "wg": r[2], "stage": r[3], "group": r[4], "core": bool(r[5]),
                             "etsi": r[6], "kind": r[8]} for r in q("SELECT * FROM spec")}
         self.spec_rel: dict[tuple[str, int], dict] = {}
@@ -98,7 +99,7 @@ class Atlas:
                   defaulted: bool = False, **extra) -> dict:
         env = {"status": status, "release": release, "release_defaulted": defaulted, "results": results or []}
         env.update(extra)
-        env["atlas"] = {"version": self.version, "snapshot": self.snapshot}
+        env["atlas"] = {"version": self.version, "snapshot": self.snapshot, "profile": self.profile}
         # Keep responses within the size limit by trimming results, never by cutting a result in half.
         while len(json.dumps(env, ensure_ascii=False).encode()) > MAX_BYTES and env["results"]:
             env["results"] = env["results"][:-1]
@@ -448,6 +449,8 @@ class Atlas:
         return self._ft
 
     def _text_hits(self, q: str, rel: int) -> tuple[list[dict], dict]:
+        if not self.db.execute("SELECT 1 FROM blob WHERE name = 'ft'").fetchone():
+            return [], {"full_text": f"not available in the {self.profile} profile; title matches only"}
         FT = self._fulltext()
         bit = 1 << (rel - self.releases[0])
         info = {"ignored": [], "missing": []}
@@ -613,9 +616,10 @@ class Atlas:
         near: list[tuple[float, dict]] = []
         code_m = re.search(r"(?:^|#|cause\s*#?\s*|\s)(\d{1,3})\s*$", q, re.I)
         timer_m = re.fullmatch(r"(?i)\s*(t\d{4})\s*", q)
-        qc, qw = lx.compact(q), lx.words(q)
         for key in keys:
             p = lx.PROTOCOLS[key]
+            qk = lx.protocol_alias(key, q)
+            qc, qw = lx.compact(qk), lx.words(qk)
             for idx, k, name, feat in self._lex_rows(key, rel):
                 if kind and k != kind:
                     continue
@@ -641,7 +645,7 @@ class Atlas:
                     found.append((sc, {"protocol": key, "object_kind": c.kind, "name": c.name, "ts": c.ts, "curated": c,
                                        "provenance": "curated", "reviewed": c.reviewed}))
         if not found:
-            sm = SequenceMatcher(None, "", qc, autojunk=False)
+            sm = SequenceMatcher(None, "", lx.compact(q), autojunk=False)
             scored = []
             for t, n in near:
                 sm.set_seq1(t)

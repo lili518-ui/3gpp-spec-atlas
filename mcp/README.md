@@ -13,7 +13,8 @@ cd mcp
 pip install -e ".[test]"               # mcp==2.3.0, pyyaml, pytest
 python -m atlas_core.build             # ../index.html -> dist/atlas.db (about 82 MB, about 4 s)
 python -m atlas_core.validate          # 14 exact-count checks against the page
-python -m pytest                       # unit tests and the 200-anchor citation golden test (needs node)
+python -m atlas_core.export            # dist/atlas-slim.db (about 9 MB) for embedding in log tools
+python -m pytest                       # unit, contract and 200-anchor citation golden tests (needs node)
 python -m atlas_core.evaluate -v       # eval sets and latency
 claude mcp add -s user atlas -- "$PWD/.venv/bin/atlas-mcp"   # register with Claude Code (stdio)
 ```
@@ -23,6 +24,32 @@ when the Mac has no Python 3.11+, and registers the server at user scope).
 
 `ATLAS_DB=/path/to/atlas.db` points the server at another build. The database is a build
 product: it is ignored by git and rebuilt from the page whenever the Atlas data changes.
+
+## Embedding in a log tool (enrich API)
+
+Log tools such as Mobile Maven call Atlas in-process, with no AI and no network, through
+`atlas_core.enrich`. It takes batches of decoded message names, uses the QXDM log code or packet
+type as a protocol hint, de-duplicates and caches, and returns one flat item per input under the
+versioned contract `atlas-enrich/1` (documented in `atlas_core/enrich.py`).
+
+```python
+from atlas_core.enrich import Enricher
+en = Enricher("dist/atlas-slim.db")
+out = en.enrich([{"name": "Service request", "log_code": "0xB80B"},
+                 {"name": "Attach request Msg", "log_code": "0xB0ED"},
+                 "UL_CCCH / RRC Setup Req"], release=17)
+for it in out["items"]:
+    print(it["status"], it["citation"])
+```
+
+Status is `ok`, `ambiguous` (candidates listed, none picked), `not_found` or `refused`
+(identifier-like input). `hint_matched` is false when the hinted protocol had no match and
+another protocol answered. Log-code hints live in `lexicon/qxdm_hints.yaml`.
+
+**Snapshots.** The slim snapshot (`python -m atlas_core.export`, about 9 MB) keeps the clause
+lists of the nine lexicon specs and the catalogue tables; every enrich result is identical to the
+full database (tested), and clause search falls back to title matches. Releases on GitHub
+(`atlas-mcp-v*` tags) carry both snapshots with their manifests, so a tool can pin one version.
 
 ## Tools
 
@@ -72,11 +99,14 @@ atlas_core/  extract, build, validate   page -> SQLite, exact-count checks
              atlas.py                   the library (all tools)
              lexicon.py, text.py        protocol rules, matching, page tokeniser
              changes.py, citation.py    ports of the page's diff and citation code
-             evaluate.py                eval runner
+             enrich.py                  batch enrich API for log tools (contract atlas-enrich/1)
+             export.py                  slim snapshot export
+             evaluate.py                eval runner (--check gates CI)
 atlas_mcp/   server.py                  MCP server: eleven read-only tools, stdio
 lexicon/     curated.yaml               causes and timers
+             qxdm_hints.yaml            QXDM log code / packet type -> protocol hints
 routes/      routes.yaml                reading routes
-eval/        where_defined, lexicon, misses (.yaml)
+eval/        where_defined, lexicon, misses, qxdm_vocab (.yaml)
 tests/       unit tests, citation golden test
 ```
 
@@ -86,6 +116,8 @@ tests/       unit tests, citation golden test
 |---|---|---|
 | Exact counts vs page | all | 14/14 pass |
 | Citation golden (page JS vs Python) | 200/200 | 200/200 |
+| Mobile Maven QXDM names (84, with log-code hints) | 3GPP ok, rest not_found | 58 ok, 26 not_found |
+| Slim vs full snapshot, enrich results | identical | identical (234 cases) |
 | Where-defined, 50 questions | ≥ 98% | 100% |
 | Lexicon top-1, 150 objects (57 real QXDM spellings) | ≥ 95% | 100% |
 | Out-of-scope, 30 queries | 100% honest | 100% |
