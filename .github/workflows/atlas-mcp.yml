@@ -1,0 +1,70 @@
+name: Atlas MCP
+
+on:
+  push:
+    paths: ["index.html", "mcp/**", ".github/workflows/atlas-mcp.yml"]
+  pull_request:
+    paths: ["index.html", "mcp/**", ".github/workflows/atlas-mcp.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: mcp/pyproject.toml
+
+      - uses: actions/setup-node@v4   # the citation golden test runs the page's JavaScript
+        with:
+          node-version: "20"
+
+      - name: Install
+        run: pip install -e ".[test]"
+
+      - name: Build the database from index.html
+        run: python -m atlas_core.build
+
+      - name: Validate counts against the page
+        run: python -m atlas_core.validate
+
+      - name: Export the slim snapshot
+        run: python -m atlas_core.export
+
+      - name: Unit, golden and contract tests
+        run: python -m pytest -q
+
+      - name: Evaluation targets
+        run: python -m atlas_core.evaluate --check
+
+      - name: MCP server answers over stdio
+        run: |
+          python - <<'EOF'
+          import asyncio, sys
+          from mcp.client.stdio import stdio_client, StdioServerParameters
+          from mcp.client.session import ClientSession
+
+          async def main():
+              params = StdioServerParameters(command=sys.executable, args=["-m", "atlas_mcp.server"])
+              async with stdio_client(params) as (r, w):
+                  async with ClientSession(r, w) as s:
+                      await s.initialize()
+                      tools = await s.list_tools()
+                      assert len(tools.tools) == 11, [t.name for t in tools.tools]
+                      res = await s.call_tool("atlas_where_defined", {"entity": "AMF", "release": 17})
+                      assert res.structured_content["status"] == "ok", res
+                      print("stdio OK:", res.structured_content["results"][0]["citation"])
+
+          asyncio.run(main())
+          EOF

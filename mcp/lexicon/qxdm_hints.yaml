@@ -1,0 +1,28 @@
+# Protocol hints from QXDM log codes and packet type names.
+#
+# A decoded message name alone can be ambiguous ("Service request" exists in 5GS NAS and in
+# EPS NAS). The QXDM log code or packet type that carried it says which protocol it belongs to.
+# Codes below are the ones that carry 3GPP messages in the Mobile Maven rule profiles (each was
+# seen paired with message names of that protocol). Drafted by Claude; `reviewed: false` until
+# the owner has checked them. Anything not listed gets no hint and is looked up with "auto".
+reviewed: false
+
+log_codes:
+  "0xB0C0": LTE-RRC     # LTE RRC OTA packet
+  "0xB821": NR-RRC      # NR5G RRC OTA packet
+  "0xB0E2": EPS-NAS     # LTE NAS ESM plain OTA, incoming
+  "0xB0E3": EPS-NAS     # LTE NAS ESM plain OTA, outgoing
+  "0xB0EC": EPS-NAS     # LTE NAS EMM plain OTA, incoming
+  "0xB0ED": EPS-NAS     # LTE NAS EMM plain OTA, outgoing
+  "0xB800": 5GS-NAS     # NR5G NAS 5GSM plain OTA, incoming
+  "0xB801": 5GS-NAS     # NR5G NAS 5GSM plain OTA, outgoing
+  "0xB80A": 5GS-NAS     # NR5G NAS 5GMM plain OTA, incoming
+  "0xB80B": 5GS-NAS     # NR5G NAS 5GMM plain OTA, outgoing
+  "0xB814": 5GS-NAS     # NR5G NAS plain message container
+
+# Regular expressions on the QXDM packet type name, tried in order when no log code is given.
+packet_types:
+  - ["^LTE NAS (EMM|ESM)\\b", EPS-NAS]
+  - ["^NR5G NAS\\b", 5GS-NAS]
+  - ["^LTE RRC OTA\\b", LTE-RRC]
+  - ["^NR5G RRC OTA\\b", NR-RRC]
