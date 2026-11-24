@@ -50,6 +50,9 @@ another protocol answered. Log-code hints live in `lexicon/qxdm_hints.yaml`.
 lists of the nine lexicon specs and the catalogue tables; every enrich result is identical to the
 full database (tested), and clause search falls back to title matches. Releases on GitHub
 (`atlas-mcp-v*` tags) carry both snapshots with their manifests, so a tool can pin one version.
+To publish one: add `release-notes/<version>.md`, then run the "Atlas MCP release" workflow from
+the Actions tab with that version (or push the tag `atlas-mcp-v<version>`); it builds, checks and
+uploads everything from the tagged code.
 
 ## Tools
 
