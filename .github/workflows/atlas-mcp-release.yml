@@ -1,0 +1,67 @@
+name: Atlas MCP release
+
+# Builds both snapshots from the tagged code, runs every check, and publishes a GitHub release
+# with the snapshots and their manifests attached. Start it from the Actions tab (Run workflow,
+# enter a version such as 0.1.0), or by pushing a tag atlas-mcp-v<version>.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version without the prefix, for example 0.1.0 (release notes: mcp/release-notes/<version>.md)"
+        required: true
+  push:
+    tags: ["atlas-mcp-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ inputs.version }}"; else V="${GITHUB_REF_NAME#atlas-mcp-v}"; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=atlas-mcp-v$V" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build, validate, export, test, evaluate
+        working-directory: mcp
+        run: |
+          pip install -e ".[test]"
+          python -m atlas_core.build
+          python -m atlas_core.validate
+          python -m atlas_core.export
+          python -m pytest -q
+          python -m atlas_core.evaluate --check
+
+      - name: Stage assets
+        run: |
+          mkdir -p out
+          cp mcp/dist/atlas.db out/atlas-full.db
+          cp mcp/dist/manifest.json out/atlas-full.json
+          cp mcp/dist/atlas-slim.db mcp/dist/atlas-slim.json out/
+          ls -la out
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          NOTES="mcp/release-notes/$VERSION.md"
+          [ -f "$NOTES" ] || { echo "Atlas MCP $VERSION. See mcp/README.md." > /tmp/notes.md; NOTES=/tmp/notes.md; }
+          gh release create "$TAG" out/* --target "$GITHUB_SHA" --title "Atlas MCP v$VERSION" --notes-file "$NOTES"
